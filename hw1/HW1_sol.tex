@@ -3,6 +3,9 @@
 
 \usepackage{lastpage}
 \usepackage[utf8]{inputenc}
+\usepackage{mathtools}
+
+\newcommand{\abs}[1]{\left\lvert#1\right\lvert}
 
 \title{First homework}
 \date{Academic year 2020/2021}
@@ -39,7 +42,23 @@ LMAT2450 -- First Homework\\
         advantage).
 	
 \begin{solutionbox}{15cm}
-\end{solutionbox}  
+We show that \(G'\) is a PRG by reduction: any distinguisher \(D'\) for \(G'\) with probability of success \(\eta(n)\) can be adapted to build a distinguisher \(D\) for \(G\) with the same probability of success, as follows:
+\begin{itemize}
+	\item On input \(r\), \(D\) will just simulate \(D'\) on \(r \Vert r'\), for a randomly chosen \(r' \in \{0, 1\}^n\).
+	\item If \(r\) is truly random, then so is \(r \Vert r'\), whereas if \(r = G(s)\) for a random \(s \in \{0, 1\}^{n}\), then \(r \Vert r' = G(s) \Vert r' = G'(s \Vert r')\).
+\end{itemize}
+Formally, it holds that
+\begin{align*}
+&\abs{\Pr_{s \gets \{0, 1\}^n} \Big[D\big(G(s)\big) = 1\Big] - \Pr_{r \gets \{0, 1\}^{\ell(n)}} \Big[D(r) = 1\Big]}\\
+= &\abs{\Pr_{s \Vert r' \gets \{0, 1\}^{2n}} \Big[D'\big(G(s) \Vert r'\big) = 1\Big] - \Pr_{r \Vert r' \gets \{0, 1\}^{\ell(n) + n}} \Big[D'(r \Vert r') = 1\Big]}\\
+= &\abs{\Pr_{s \Vert r' \gets \{0, 1\}^{2n}} \Big[D'\big(G'(s \Vert r')\big) = 1\Big] - \Pr_{r \Vert r' \gets \{0, 1\}^{\ell(n) + n}} \Big[D'(r \Vert r') = 1\Big]}\\
+= &\abs{\Pr_{s' \gets \{0, 1\}^{2n}} \Big[D'\big(G'(s')\big) = 1\Big] - \Pr_{r'' \gets \{0, 1\}^{\ell(n) + n}} \Big[D'(r'') = 1\Big]}\\
+= &\:\eta(n).
+\end{align*}
+Note the changes of subscripts for the probabilities.
+This shows that if we can distinguish \(G'\) with probability \(\eta(n)\), we can also distinguish \(G\) with that same probability.
+By assumption, \(\eta(n)\) must be negligible (as \(G\) is a PRG); we hence conclude that \(G'\) is a PRG too.
+\end{solutionbox}
 
 \newpage
 
@@ -51,7 +70,17 @@ We define $F':\{0,1\}^n\times \{0,1\}^{2n} \longrightarrow \{0,1\}^n$ such that 
 Show either that $F'$ is a PRF by providing a reduction to the security of $F$, or that $F'$ is not a PRF by exhibiting an attack (building a distinguisher with non negligible advantage).
 
 \begin{solutionbox}{15cm}
-\end{solutionbox}  
+	\(F'\) is not a PRF.
+	We show it by building a distinguisher \(D\) which wins with non-negligible probability.
+	\(D\) queries its oracle \(\mathcal{O}\) for \(\mathcal{O}(x \Vert x)\), for some value \(x \in \{0, 1\}^n\) (for simplicity, we take \(x = 1^n\)).
+	If the output \(\mathcal{O}(x \Vert x) = 0^n\), \(D\) outputs \(b' = 1\), and otherwise it outputs \(b' = 0\).
+	The probability that a random function would give output \(0^n\) for an input of the form \(x \Vert x\) is \(2^{-n}\), whereas for \(F'\) this probability is \(1\).
+	
+	Formally, we have (where \(\mathsf{Func}_{2n, n}\) is the set of all functions mapping \(2n\)-bit strings to \(n\)-bit strings)
+	\[\abs{\Pr_{k \gets \{0, 1\}^n} \Big[D^{F'(k, \cdot)}(1^n) = 1\Big] - \Pr_{f \gets \mathsf{Func}_{2n, n}} \Big[D^{f(\cdot)}(1^n)\Big]} = 1 - 2^{-n}.
+	\]
+	This is clearly not negligible, and hence shows that \(F'\) is not a PRF.
+\end{solutionbox}
 
 \newpage
 
@@ -62,8 +91,17 @@ Define also $G'$ such that $G'(s):= G(s)\oplus(0^{l(n)-n}||s)$.
 
 Show that $G'$ may not be a PRG.
 \begin{solutionbox}{15cm}
+	We show a scenario in which \(G'\) is not a PRG.
+	Suppose \(G\) is such that the last bit of its output is always equal to the last bit of the input.
+	In that case, the output of \(G'\) always has a zero last bit, which allows us to build a distinguisher \(D'\) with non-negligible chance of success: it predicts \(b' = 1\) when the last bit of the output is zero, and \(b' = 0\) otherwise.
+	For a truly random generator, this would only be accurate half the time, but for the specification of the PRG we give it would always be right, meaning that it wins the distinguishing game with non-negligible probability:
+	\[
+	\abs{\Pr_{s \gets \{0, 1\}^n}\Big[D'\big(G'(s)\big) = 1\Big] - \Pr_{r \gets \{0, 1\}^{\ell(n)}}\Big[D'(r) = 1\Big]} = 1 - \frac{1}{2} = \frac{1}{2}.
+	\]
+	
+	It then remains to show that there exists a PRG \(G\) satisfying this property.
+	Conveniently, the definition of \(G'\) from the first exercise of this homework satisfies this definition (if we rework it so as to have the right lengths).
 \end{solutionbox}
-
 \end{questions}
 
   
